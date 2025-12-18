@@ -6,14 +6,20 @@ def main():
     logger = KeyLogger()
     
     try:
-        print("Recording... Press Ctrl+C to stop in terminal if needed, or define exit condition.")
-        # logic to start logger
-        # For simplicity in this phase, we just instantiate it.
-        # functional listener needs to be blocking or in thread.
+        print("Recording... Press Ctrl+C to stop in terminal if needed.")
         logger.start()
     except KeyboardInterrupt:
         print("\nStopping...")
-        print(f"Captured {len(logger.get_log())} keystrokes.")
+
+    # Always generate report (whether stopped by ESC or Ctrl+C)
+    log_data = logger.get_log()
+    print(f"Captured {len(log_data)} keystrokes.")
+    
+    # Analysis Phase
+    from analyzer import Analyzer
+    print("Analyzing session...")
+    analyzer = Analyzer(log_data)
+    print(analyzer.analyze())
 
 if __name__ == "__main__":
     main()

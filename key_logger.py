@@ -14,6 +14,9 @@ class KeyLogger:
         except AttributeError:
             self.log.append({'key': str(key), 'time': time.time()})
 
+        if key == keyboard.Key.esc:
+            return False
+
     def start(self):
         self.active = True
         self.start_time = time.time()
