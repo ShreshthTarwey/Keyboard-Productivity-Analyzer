@@ -19,16 +19,32 @@ class Analyzer:
         total_keys = len(self.df)
         speed = total_keys / duration if duration > 0 else 0
         
-        # Identify non-alphanumeric keys (potential corrections/mistakes logic for demo)
-        special_keys = self.df[self.df['key'].astype(str).str.len() > 1]
-        mistake_count = len(special_keys)
+        # Fatigue Detection (Pause Analysis)
+        long_pauses = 0
+        pause_threshold = 5.0 # seconds
+        timestamps = self.df['time'].tolist()
+        
+        for i in range(1, len(timestamps)):
+            diff = timestamps[i] - timestamps[i-1]
+            if diff > pause_threshold:
+                long_pauses += 1
+        
+        fatigue_status = "Low"
+        if long_pauses > 5:
+            fatigue_status = "High (Taking many breaks)"
+        elif long_pauses > 2:
+            fatigue_status = "Medium"
 
         report = f"""
         --- Session Report ---
         Duration: {duration:.2f} seconds
         Total Keystrokes: {total_keys}
         Speed: {speed:.2f} keys/sec
-        Special/Function Keys Used: {mistake_count} (Potential corrections?)
+        Mistakes/Special Keys: {mistake_count}
+        
+        --- Fatigue Analysis ---
+        Long Pauses (>5s): {long_pauses}
+        Fatigue Level: {fatigue_status}
         ----------------------
         """
         return report
