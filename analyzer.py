@@ -35,12 +35,30 @@ class Analyzer:
         elif long_pauses > 2:
             fatigue_status = "Medium"
 
+        # Fatigue Detection (Pause Analysis)
+        long_pauses = 0
+        pause_threshold = 5.0 # seconds
+        timestamps = self.df['time'].tolist()
+        
+        for i in range(1, len(timestamps)):
+            diff = timestamps[i] - timestamps[i-1]
+            if diff > pause_threshold:
+                long_pauses += 1
+        
+        fatigue_status = "Low"
+        if long_pauses > 5:
+            fatigue_status = "High (Taking many breaks)"
+        elif long_pauses > 2:
+            fatigue_status = "Medium"
+
         report = f"""
         --- Session Report ---
         Duration: {duration:.2f} seconds
         Total Keystrokes: {total_keys}
         Speed: {speed:.2f} keys/sec
-        Mistakes/Special Keys: {mistake_count}
+
+        Special/Function Keys Used: {mistake_count} (Potential corrections?)
+
         
         --- Fatigue Analysis ---
         Long Pauses (>5s): {long_pauses}
