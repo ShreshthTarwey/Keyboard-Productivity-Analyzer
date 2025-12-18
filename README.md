@@ -1,7 +1,7 @@
 # Keyboard Activity & Productivity Analyzer
 
 ## Overview
-A Python-based tool to track keyboard activity, analyze typing speed, identify mistakes, and monitor idle time. This tool helps users understand their productivity patterns.
+A Python-based tool to track keyboard activity, analyze typing speed, identify blunders, and monitor idle time. This tool helps users understand their productivity patterns.
 
 ## Features
 - **Key Logging**: Tracks keystrokes securely in the background.
