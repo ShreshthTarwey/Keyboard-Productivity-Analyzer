@@ -44,7 +44,7 @@ class Analyzer:
         --- Fatigue Analysis (v3.0) ---
         Fatigue Score: {score}/100
         Status: {fatigue_label}
-        Deep Idles (>60s): {deep_idles}
+        Deep Idles (>10s): {deep_idles}
         ----------------------
         """
         return report
