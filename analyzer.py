@@ -1,5 +1,7 @@
 import pandas as pd
 import time
+import csv
+import os
 
 class Analyzer:
     def __init__(self, log_data, activity_timestamps=None, hold_durations=None):
@@ -7,6 +9,7 @@ class Analyzer:
         self.df = pd.DataFrame(log_data)
         self.activity_timestamps = activity_timestamps if activity_timestamps else []
         self.hold_durations = hold_durations if hold_durations else []
+        self.history_file = "history.csv"
 
     def analyze(self):
         if self.df.empty:
@@ -30,6 +33,10 @@ class Analyzer:
 
         # Advanced Fatigue Analysis
         score, fatigue_label, deep_idles = self.calculate_fatigue_score(correction_ratio)
+        
+        # History & Comparison
+        self.save_to_history(duration, speed, score, fatigue_label)
+        prev_speed, prev_score, trend = self.get_comparison(speed, score)
 
         report = f"""
         --- Session Report ---
@@ -45,6 +52,11 @@ class Analyzer:
         Fatigue Score: {score}/100
         Status: {fatigue_label}
         Deep Idles (>10s): {deep_idles}
+        
+        --- History Comparison ---
+        Previous Speed: {prev_speed} KPS
+        Previous Score: {prev_score}/100
+        Trend: {trend}
         ----------------------
         """
         return report
@@ -88,6 +100,41 @@ class Analyzer:
 
     def save_report(self, report_text):
         filename = f"session_report_{int(time.time())}.txt"
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(report_text)
         return filename
+
+    def save_to_history(self, duration, speed, score, status):
+        file_exists = os.path.isfile(self.history_file)
+        
+        with open(self.history_file, 'a', newline='') as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow(["Timestamp", "Duration", "Speed", "Score", "Status"])
+            
+            writer.writerow([int(time.time()), f"{duration:.2f}", f"{speed:.2f}", score, status])
+
+    def get_comparison(self, current_speed, current_score):
+        if not os.path.isfile(self.history_file):
+            return "N/A", "N/A", "First Session"
+            
+        try:
+            df = pd.read_csv(self.history_file)
+            if len(df) < 2: # Only the current one exists
+                return "N/A", "N/A", "First Session"
+                
+            # Get second to last row (previous session)
+            prev = df.iloc[-2]
+            prev_speed = float(prev["Speed"])
+            prev_score = int(prev["Score"])
+            
+            if current_score > prev_score:
+                trend = "Improved 🟢"
+            elif current_score < prev_score:
+                trend = "Worsened 🔴"
+            else:
+                trend = "Stable 🟡"
+                
+            return f"{prev_speed:.2f}", prev_score, trend
+        except Exception:
+            return "Error", "Error", "Data Corrupt"
