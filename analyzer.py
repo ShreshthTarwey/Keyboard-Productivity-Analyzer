@@ -19,6 +19,13 @@ class Analyzer:
         total_keys = len(self.df)
         speed = total_keys / duration if duration > 0 else 0
         
+        # Mistake Analysis
+        # Count explicit backspaces
+        backspaces = len(self.df[self.df['key'] == 'Key.backspace'])
+        
+        # Correction Ratio
+        correction_ratio = (backspaces / total_keys * 100) if total_keys > 0 else 0
+
         # Identify non-alphanumeric keys (potential corrections/mistakes logic for demo)
         special_keys = self.df[self.df['key'].astype(str).str.len() > 1]
         mistake_count = len(special_keys)
@@ -44,9 +51,11 @@ class Analyzer:
         Duration: {duration:.2f} seconds
         Total Keystrokes: {total_keys}
         Speed: {speed:.2f} keys/sec
-
-        Special/Function Keys Used: {mistake_count} (Potential corrections?)
-
+        
+        --- Mistake Analysis ---
+        Total Backspaces: {backspaces}
+        Correction Ratio: {correction_ratio:.2f}%
+        Special Keys: {mistake_count}
         
         --- Fatigue Analysis ---
         Long Pauses (>5s): {long_pauses}
