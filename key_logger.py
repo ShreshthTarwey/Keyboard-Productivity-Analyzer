@@ -11,6 +11,7 @@ class KeyLogger:
         
         # Real-time stats
         self.key_count = 0
+        self.backspace_count = 0
         self.last_activity_time = None
         
         # Advanced Fatigue Metrics
@@ -21,6 +22,10 @@ class KeyLogger:
     def on_press(self, key):
         current_time = time.time()
         self.key_count += 1
+        
+        if key == keyboard.Key.backspace:
+            self.backspace_count += 1
+            
         self.last_activity_time = current_time
         self.activity_timestamps.append(current_time)
         
@@ -66,6 +71,7 @@ class KeyLogger:
         self.start_time = time.time()
         self.last_activity_time = self.start_time
         self.key_count = 0
+        self.backspace_count = 0
         self.activity_timestamps = [self.start_time]
         
         # Keyboard Listener
@@ -112,4 +118,4 @@ class KeyLogger:
             else:
                 mouse_status = "Idle"
             
-        return duration, keys, speed, current_pause, mouse_status
+        return duration, keys, speed, current_pause, mouse_status, self.backspace_count

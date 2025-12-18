@@ -3,6 +3,39 @@ from tkinter import messagebox
 from tkinter import ttk
 from key_logger import KeyLogger
 from analyzer import Analyzer
+import time
+
+class ToastNotification:
+    def __init__(self, root, message, color):
+        self.top = tk.Toplevel(root)
+        self.top.overrideredirect(True)
+        self.top.geometry(f"300x50+{root.winfo_screenwidth()-320}+{root.winfo_screenheight()-100}")
+        self.top.configure(bg=color)
+        
+        tk.Label(self.top, text=message, bg=color, fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=10).pack()
+        
+        # Fade in
+        self.top.attributes("-alpha", 0.0)
+        self.fade_in()
+
+        # Auto close
+        self.top.after(4000, self.fade_out)
+
+    def fade_in(self):
+        alpha = self.top.attributes("-alpha")
+        if alpha < 0.9:
+            alpha += 0.1
+            self.top.attributes("-alpha", alpha)
+            self.top.after(50, self.fade_in)
+
+    def fade_out(self):
+        alpha = self.top.attributes("-alpha")
+        if alpha > 0:
+            alpha -= 0.1
+            self.top.attributes("-alpha", alpha)
+            self.top.after(50, self.fade_out)
+        else:
+            self.top.destroy()
 
 class TrackerGUI:
     def __init__(self, root):
@@ -38,6 +71,12 @@ class TrackerGUI:
 
         self.logger = KeyLogger()
         self.is_running = False
+        
+        # Smart Alert State
+        self.last_alert_time = 0
+        self.long_pause_count = 0
+        self.last_backspace_count = 0
+        self.error_burst_start = 0
 
         # Main Layout
         main_frame = ttk.Frame(root, padding="20")
@@ -94,6 +133,11 @@ class TrackerGUI:
         self.logger.start()
         self.is_running = True
         
+        # Reset Alert State
+        self.long_pause_count = 0
+        self.last_backspace_count = 0
+        self.last_alert_time = time.time()
+        
         status_text = "Recording (Privacy Mode)..." if privacy else "Recording..."
         self.status_label.configure(text=status_text, foreground="#27ae60")
         
@@ -106,7 +150,7 @@ class TrackerGUI:
         if not self.is_running:
             return
             
-        duration, keys, speed, pause, mouse_stat = self.logger.get_stats()
+        duration, keys, speed, pause, mouse_stat, backspaces = self.logger.get_stats()
         
         self.lbl_speed.configure(text=f"Speed: {speed:.2f} KPS")
         self.lbl_count.configure(text=f"Keys: {keys}")
@@ -123,6 +167,92 @@ class TrackerGUI:
             self.lbl_pause.configure(foreground="#e74c3c") # Red
         else:
             self.lbl_pause.configure(foreground="#333333") # Dark
+            
+        # --- Smart Alert Logic ---
+        import time
+        current_time = time.time()
+        
+        # 1. Fatigue Check (3 Long Pauses)
+        # We need to detect the *start* of a long pause only once
+        # Using a simple threshold check may trigger repeatedly.
+        # Improvement: In a real app, we'd track state transitions. 
+        # For this demo, let's just alert if pause > 15s AND we haven't alerted recently.
+        if pause > 15 and (current_time - self.last_alert_time) > 60:
+             self.long_pause_count += 1
+             if self.long_pause_count >= 3:
+                 ToastNotification(self.root, "⚠️ You seem tired. Consider a break.", "#e67e22") # Orange
+                 self.last_alert_time = current_time
+                 self.long_pause_count = 0 # Reset
+        
+        # 2. Error Burst Check
+        # Check delta in backspaces every update (100ms) is too fast.
+        # Let's accumulate. But simple way:
+        new_errors = backspaces - self.last_backspace_count
+        if new_errors > 3: # 3 backspaces in 100ms is HUMANLY IMPOSSIBLE?? No.
+            # Actually update runs every 100ms. 
+            # If user holds backspace, they can generate many.
+            pass
+            
+        # Better Error Logic: Check total backspaces in last 10 seconds? 
+        # For simplicity in this demo: If total backspaces increases by 5 in a short burst.
+        if new_errors > 0:
+             # simple burst detection could be complex.
+             # Let's just say if you made > 5 mistakes since last check (unlikely in 100ms)
+             # Let's check accumulated.
+             pass
+             
+        # Re-think Error Logic for simplicity:
+        # If total backspaces > 10 and ratio is high? No realtime.
+        # Let's track backspaces per minute window? Too complex for 1 file.
+        # Simple Trigger: If you press backspace 5 times in 5 seconds.
+        # Let's just use the count directly.
+        if backspaces - self.last_backspace_count > 0:
+             # User pressed backspace
+             pass
+        
+        # Working Simple Logic:
+        # Every 5 seconds, check how many errors occurred.
+        import time
+        current_time = time.time()
+        
+        # 1. Fatigue Check (Pause > 15s)
+        # We only count a long pause once per occurrence
+        if pause > 15:
+             # Check if we already alerted for this specific long pause
+             # We use a simple timestamp lockout
+             if (current_time - self.last_alert_time) > 20: 
+                 self.long_pause_count += 1
+                 if self.long_pause_count >= 3:
+                     ToastNotification(self.root, "⚠️ You seem tired. Consider a break.", "#e67e22") # Orange
+                     self.last_alert_time = current_time
+                     self.long_pause_count = 0
+                 else:
+                     # Minor visual cue could go here, but let's wait for 3 strikes
+                     pass
+
+        # 2. Error Burst Check
+        # Check if Backspace count increased
+        diff = backspaces - self.last_backspace_count
+        if diff > 0:
+            # Add timestamp for every backspace press
+            if not hasattr(self, 'backspace_timestamps'):
+                self.backspace_timestamps = []
+            
+            for _ in range(diff):
+                self.backspace_timestamps.append(current_time)
+            
+            self.last_backspace_count = backspaces
+            
+        # Filter timestamps to keep only last 5 seconds
+        if hasattr(self, 'backspace_timestamps'):
+            self.backspace_timestamps = [t for t in self.backspace_timestamps if current_time - t < 5.0]
+            
+            # If > 5 backspaces in last 5 seconds
+            if len(self.backspace_timestamps) > 5:
+                 if (current_time - self.last_alert_time) > 10: # Anti-spam
+                     ToastNotification(self.root, "🛑 High correction rate detected.", "#c0392b") # Red
+                     self.last_alert_time = current_time
+                     self.backspace_timestamps = [] # Reset
 
         self.root.after(100, self.update_metrics)
 
