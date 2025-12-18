@@ -1,0 +1,8 @@
+
+        --- Session Report ---
+        Duration: 11.85 seconds
+        Total Keystrokes: 136
+        Speed: 11.48 keys/sec
+        Special/Function Keys Used: 8 (Potential corrections?)
+        ----------------------
+        

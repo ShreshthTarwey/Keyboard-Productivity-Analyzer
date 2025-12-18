@@ -20,9 +20,14 @@ class KeyLogger:
     def start(self):
         self.active = True
         self.start_time = time.time()
-        print("Logger started... (Press ESC to stop)")
-        with keyboard.Listener(on_press=self.on_press) as listener:
-            listener.join()
+        # Non-blocking listener for GUI
+        self.listener = keyboard.Listener(on_press=self.on_press)
+        self.listener.start()
+
+    def stop(self):
+        self.active = False
+        if hasattr(self, 'listener'):
+            self.listener.stop()
     
     def get_log(self):
         return self.log

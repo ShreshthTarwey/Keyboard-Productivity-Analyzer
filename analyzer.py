@@ -32,3 +32,9 @@ class Analyzer:
         ----------------------
         """
         return report
+
+    def save_report(self, report_text):
+        filename = f"session_report_{int(time.time())}.txt"
+        with open(filename, "w") as f:
+            f.write(report_text)
+        return filename
