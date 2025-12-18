@@ -2,9 +2,11 @@ import pandas as pd
 import time
 
 class Analyzer:
-    def __init__(self, log_data):
+    def __init__(self, log_data, activity_timestamps=None, hold_durations=None):
         self.log_data = log_data
         self.df = pd.DataFrame(log_data)
+        self.activity_timestamps = activity_timestamps if activity_timestamps else []
+        self.hold_durations = hold_durations if hold_durations else []
 
     def analyze(self):
         if self.df.empty:
@@ -20,31 +22,14 @@ class Analyzer:
         speed = total_keys / duration if duration > 0 else 0
         
         # Mistake Analysis
-        # Count explicit backspaces
         backspaces = len(self.df[self.df['key'] == 'Key.backspace'])
-        
-        # Correction Ratio
         correction_ratio = (backspaces / total_keys * 100) if total_keys > 0 else 0
-
-        # Identify non-alphanumeric keys (potential corrections/mistakes logic for demo)
+        
         special_keys = self.df[self.df['key'].astype(str).str.len() > 1]
         mistake_count = len(special_keys)
 
-        # Fatigue Detection (Pause Analysis)
-        long_pauses = 0
-        pause_threshold = 5.0 # seconds
-        timestamps = self.df['time'].tolist()
-        
-        for i in range(1, len(timestamps)):
-            diff = timestamps[i] - timestamps[i-1]
-            if diff > pause_threshold:
-                long_pauses += 1
-        
-        fatigue_status = "Low"
-        if long_pauses > 5:
-            fatigue_status = "High (Taking many breaks)"
-        elif long_pauses > 2:
-            fatigue_status = "Medium"
+        # Advanced Fatigue Analysis
+        score, fatigue_label, deep_idles = self.calculate_fatigue_score(correction_ratio)
 
         report = f"""
         --- Session Report ---
@@ -55,14 +40,51 @@ class Analyzer:
         --- Mistake Analysis ---
         Total Backspaces: {backspaces}
         Correction Ratio: {correction_ratio:.2f}%
-        Special Keys: {mistake_count}
         
-        --- Fatigue Analysis ---
-        Long Pauses (>5s): {long_pauses}
-        Fatigue Level: {fatigue_status}
+        --- Fatigue Analysis (v3.0) ---
+        Fatigue Score: {score}/100
+        Status: {fatigue_label}
+        Deep Idles (>60s): {deep_idles}
         ----------------------
         """
         return report
+
+    def calculate_fatigue_score(self, correction_ratio):
+        score = 100
+        deep_idles = 0
+        
+        # 1. Idle Penalty
+        if len(self.activity_timestamps) > 1:
+            for i in range(1, len(self.activity_timestamps)):
+                diff = self.activity_timestamps[i] - self.activity_timestamps[i-1]
+                if diff > 10:
+                    score -= 20 # Deep Idle (Zoned out - Demo Mode >10s)
+                    deep_idles += 1
+                elif diff > 5:
+                    score -= 5 # Minor Distraction
+
+        # 2. Key Hold Penalty (Sluggishness)
+        avg_hold = 0
+        if self.hold_durations:
+            avg_hold = sum(self.hold_durations) / len(self.hold_durations)
+            if avg_hold > 0.15: # 150ms
+                score -= 10
+
+        # 3. Frustration Penalty (Errors)
+        score -= (correction_ratio * 2)
+
+        # Clamp Score
+        score = max(0, min(100, int(score)))
+
+        # Label
+        if score >= 90:
+            label = "Unknown/Energetic (Flow State)"
+        elif score >= 60:
+            label = "Normal"
+        else:
+            label = "Fatigued (Need a Break)"
+            
+        return score, label, deep_idles
 
     def save_report(self, report_text):
         filename = f"session_report_{int(time.time())}.txt"
