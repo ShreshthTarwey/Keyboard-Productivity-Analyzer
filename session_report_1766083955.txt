@@ -1,0 +1,21 @@
+
+        --- Session Report ---
+        Duration: 47.85 seconds
+        Total Keystrokes: 127
+        Speed: 2.65 keys/sec
+        
+        --- Mistake Analysis ---
+        Total Backspaces: 70
+        Correction Ratio: 55.12%
+        
+        --- Fatigue Analysis (v3.0) ---
+        Fatigue Score: 0/100
+        Status: Fatigued (Need a Break)
+        Deep Idles (>10s): 2
+        
+        --- History Comparison ---
+        Previous Speed: 8.31 KPS
+        Previous Score: 38/100
+        Trend: Worsened 🔴
+        ----------------------
+        
