@@ -9,7 +9,17 @@ class Analyzer:
         self.df = pd.DataFrame(log_data)
         self.activity_timestamps = activity_timestamps if activity_timestamps else []
         self.hold_durations = hold_durations if hold_durations else []
-        self.history_file = "history.csv"
+        
+        # Ensure directories exist
+        import os
+        self.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.data_dir = os.path.join(self.root_dir, "data")
+        self.report_dir = os.path.join(self.root_dir, "reports")
+        
+        if not os.path.exists(self.data_dir): os.makedirs(self.data_dir)
+        if not os.path.exists(self.report_dir): os.makedirs(self.report_dir)
+        
+        self.history_file = os.path.join(self.data_dir, "history.csv")
 
     def analyze(self):
         if self.df.empty:
@@ -131,10 +141,9 @@ class Analyzer:
         # Generate Chart
         chart_file = self.generate_charts()
         
-        # Save Text Report
-        txt_filename = f"session_report_{int(time.time())}.txt"
-        with open(txt_filename, "w", encoding="utf-8") as f:
-            f.write(report_text)
+        # Define Filename in Reports Directory
+        base_name = f"session_report_{int(time.time())}"
+        pdf_filename = os.path.join(self.report_dir, f"{base_name}.pdf")
             
         # Generate PDF Report
         try:
@@ -142,7 +151,6 @@ class Analyzer:
             from reportlab.pdfgen import canvas
             from reportlab.lib.utils import ImageReader
             
-            pdf_filename = txt_filename.replace(".txt", ".pdf")
             c = canvas.Canvas(pdf_filename, pagesize=letter)
             width, height = letter
             
@@ -164,10 +172,14 @@ class Analyzer:
                 os.remove(chart_file) # Cleanup png
                 
             c.save()
-            return pdf_filename # Return PDF path if successful
+            return pdf_filename # Return PDF path
             
         except ImportError:
-            return txt_filename # Fallback to text if reportlab missing
+            # Fallback to text if reportlab missing (Saved to Data Dir)
+            txt_filename = os.path.join(self.data_dir, f"{base_name}.txt")
+            with open(txt_filename, "w", encoding="utf-8") as f:
+                f.write(report_text)
+            return txt_filename
 
     def save_to_history(self, duration, speed, score, status):
         file_exists = os.path.isfile(self.history_file)
