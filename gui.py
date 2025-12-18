@@ -29,6 +29,9 @@ class TrackerGUI:
         self.lbl_pause = tk.Label(self.metrics_frame, text="Pause: 0.0s", font=("Arial", 10))
         self.lbl_pause.pack()
 
+        self.lbl_mouse = tk.Label(self.metrics_frame, text="Mouse: Idle", font=("Arial", 10))
+        self.lbl_mouse.pack()
+
         # Start Button
         self.start_btn = tk.Button(root, text="Start Tracking", command=self.start_tracking, bg="green", fg="white", width=15)
         self.start_btn.pack(pady=5)
@@ -51,11 +54,17 @@ class TrackerGUI:
         if not self.is_running:
             return
             
-        duration, keys, speed, pause = self.logger.get_stats()
+        duration, keys, speed, pause, mouse_stat = self.logger.get_stats()
         
         self.lbl_speed.config(text=f"Speed: {speed:.2f} KPS")
         self.lbl_count.config(text=f"Total Keys: {keys}")
         self.lbl_pause.config(text=f"Pause: {pause:.1f}s")
+        self.lbl_mouse.config(text=f"Mouse: {mouse_stat}")
+        
+        if mouse_stat == "Active":
+            self.lbl_mouse.config(fg="green")
+        else:
+            self.lbl_mouse.config(fg="gray")
         
         # Color code pause (visual fatigue warning)
         if pause > 5:
@@ -75,7 +84,9 @@ class TrackerGUI:
         
         # Analyze
         log_data = self.logger.get_log()
-        analyzer = Analyzer(log_data)
+        activity, holds = self.logger.get_advanced_metrics()
+        
+        analyzer = Analyzer(log_data, activity, holds)
         report = analyzer.analyze()
         
         # Save
