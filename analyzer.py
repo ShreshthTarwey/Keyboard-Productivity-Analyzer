@@ -98,11 +98,76 @@ class Analyzer:
             
         return score, label, deep_idles
 
+    def generate_charts(self):
+        try:
+            import matplotlib.pyplot as plt
+            
+            # Create a simple "Keys over Time" chart
+            # Bucket timestamps into 1-second intervals
+            if not self.activity_timestamps:
+                return None
+                
+            start_t = self.activity_timestamps[0]
+            relative_times = [t - start_t for t in self.activity_timestamps]
+            
+            plt.figure(figsize=(6, 4))
+            plt.hist(relative_times, bins=max(1, int(max(relative_times))), color='skyblue', edgecolor='black')
+            plt.title('Work Intensity (Keystrokes & Mouse Events)')
+            plt.xlabel('Timeline (Seconds)')
+            plt.ylabel('Intensity (Actions/Sec)')
+            plt.tight_layout()
+            
+            chart_filename = f"chart_{int(time.time())}.png"
+            plt.savefig(chart_filename)
+            plt.close()
+            return chart_filename
+        except ImportError:
+            return None
+        except Exception as e:
+            print(f"Chart error: {e}")
+            return None
+
     def save_report(self, report_text):
-        filename = f"session_report_{int(time.time())}.txt"
-        with open(filename, "w", encoding="utf-8") as f:
+        # Generate Chart
+        chart_file = self.generate_charts()
+        
+        # Save Text Report
+        txt_filename = f"session_report_{int(time.time())}.txt"
+        with open(txt_filename, "w", encoding="utf-8") as f:
             f.write(report_text)
-        return filename
+            
+        # Generate PDF Report
+        try:
+            from reportlab.lib.pagesizes import letter
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.utils import ImageReader
+            
+            pdf_filename = txt_filename.replace(".txt", ".pdf")
+            c = canvas.Canvas(pdf_filename, pagesize=letter)
+            width, height = letter
+            
+            # Title
+            c.setFont("Helvetica-Bold", 16)
+            c.drawString(50, height - 50, "Session Productivity Report")
+            
+            # Content (Split by newlines)
+            c.setFont("Helvetica", 10)
+            y = height - 80
+            for line in report_text.split('\n'):
+                c.drawString(50, y, line.strip())
+                y -= 15
+                
+            # Embed Chart
+            if chart_file and os.path.exists(chart_file):
+                y -= 220 # Space for chart
+                c.drawImage(chart_file, 50, y, width=400, height=250)
+                os.remove(chart_file) # Cleanup png
+                
+            c.save()
+            return pdf_filename # Return PDF path if successful
+            
+        except ImportError:
+            return txt_filename # Fallback to text if reportlab missing
 
     def save_to_history(self, duration, speed, score, status):
         file_exists = os.path.isfile(self.history_file)
