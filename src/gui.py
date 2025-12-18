@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-from key_logger import KeyLogger
-from analyzer import Analyzer
+from .key_logger import KeyLogger
+from .analyzer import Analyzer
 import time
 
 class ToastNotification:

@@ -1,5 +1,5 @@
 import tkinter as tk
-from gui import TrackerGUI
+from src.gui import TrackerGUI
 
 def main():
     root = tk.Tk()
