@@ -8,7 +8,7 @@ class TrackerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Activity Tracker")
-        self.root.geometry("360x320")
+        self.root.geometry("360x380")
         
         # Theme & Style
         self.style = ttk.Style()
@@ -21,6 +21,9 @@ class TrackerGUI:
         # Configure Styles
         self.style.configure("TFrame", background=BG_COLOR)
         self.style.configure("TLabel", background=BG_COLOR, font=("Segoe UI", 10), foreground="#333333")
+        self.style.configure("TCheckbutton", background=BG_COLOR, font=("Segoe UI", 10), foreground="#333333")
+        self.style.map("TCheckbutton", background=[('active', BG_COLOR)])
+        
         self.style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), foreground="#2c3e50")
         self.style.configure("Status.TLabel", font=("Segoe UI", 12))
         self.style.configure("TLabelframe", background=BG_COLOR, font=("Segoe UI", 10, "bold"))
@@ -69,6 +72,11 @@ class TrackerGUI:
         self.metrics_frame.columnconfigure(0, weight=1)
         self.metrics_frame.columnconfigure(1, weight=1)
 
+        # Privacy Toggle
+        self.privacy_var = tk.BooleanVar(value=False)
+        self.chk_privacy = ttk.Checkbutton(main_frame, text="Privacy Mode (Don't save keys)", variable=self.privacy_var)
+        self.chk_privacy.pack(pady=5)
+
         # Buttons
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(pady=10, fill=tk.X)
@@ -81,10 +89,15 @@ class TrackerGUI:
         self.stop_btn.state(['disabled'])
 
     def start_tracking(self):
-        self.logger = KeyLogger() # Reset logger
+        privacy = self.privacy_var.get()
+        self.logger = KeyLogger(privacy_mode=privacy) # Reset logger with privacy setting
         self.logger.start()
         self.is_running = True
-        self.status_label.configure(text="Status: Recording...", foreground="#27ae60")
+        
+        status_text = "Recording (Privacy Mode)..." if privacy else "Recording..."
+        self.status_label.configure(text=status_text, foreground="#27ae60")
+        
+        self.chk_privacy.state(['disabled']) # Lock toggle while running
         self.start_btn.state(['disabled'])
         self.stop_btn.state(['!disabled'])
         self.update_metrics()
@@ -136,6 +149,7 @@ class TrackerGUI:
         # Reset UI
         self.start_btn.state(['!disabled'])
         self.stop_btn.state(['disabled'])
+        self.chk_privacy.state(['!disabled'])
 
 if __name__ == "__main__":
     root = tk.Tk()

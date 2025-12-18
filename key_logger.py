@@ -3,10 +3,11 @@ import time
 import threading
 
 class KeyLogger:
-    def __init__(self):
+    def __init__(self, privacy_mode=False):
         self.log = []
         self.active = False
         self.start_time = None
+        self.privacy_mode = privacy_mode
         
         # Real-time stats
         self.key_count = 0
@@ -27,10 +28,14 @@ class KeyLogger:
         if key not in self.pressed_keys:
             self.pressed_keys[key] = current_time
         
-        try:
-            self.log.append({'key': key.char, 'time': current_time})
-        except AttributeError:
-            self.log.append({'key': str(key), 'time': current_time})
+        # Log key (Masked if Privacy Mode is ON)
+        if self.privacy_mode:
+            self.log.append({'key': 'HIDDEN', 'time': current_time})
+        else:
+            try:
+                self.log.append({'key': key.char, 'time': current_time})
+            except AttributeError:
+                self.log.append({'key': str(key), 'time': current_time})
 
         if key == keyboard.Key.esc:
             return False
