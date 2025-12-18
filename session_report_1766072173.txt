@@ -1,0 +1,16 @@
+
+        --- Session Report ---
+        Duration: 5.54 seconds
+        Total Keystrokes: 17
+        Speed: 3.07 keys/sec
+        
+        --- Mistake Analysis ---
+        Total Backspaces: 5
+        Correction Ratio: 29.41%
+        Special Keys: 7
+        
+        --- Fatigue Analysis ---
+        Long Pauses (>5s): 0
+        Fatigue Level: Low
+        ----------------------
+        
