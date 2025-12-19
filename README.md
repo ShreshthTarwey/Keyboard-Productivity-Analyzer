@@ -172,5 +172,40 @@ We followed a strict "Feature Branch Workflow" to ensure code quality. Here is e
 
 ---
 
-## 7. Conclusion
+## 7. Directory Structure
+
+Keyboard-Productivity-Analyzer/
+│
+├── src/
+│   ├── analyzer.py        # Fatigue scoring & productivity analysis logic
+│   ├── key_logger.py      # Keyboard event listener and data collection
+│   ├── gui.py             # Tkinter-based graphical user interface
+│   └── __init__.py
+│
+├── data/
+│   └── history.csv        # Stores previous session data for comparison
+│
+├── reports/
+│   ├── session_report_*.pdf   # Auto-generated PDF reports with graphs
+│
+├── screenshots/
+│   ├── GUISS1.png
+│   ├── ReportScreenshot.png
+│   ├── Alert.png
+│   ├── SS1.png
+│   ├── SS2.png
+│   ├── SS3.png
+│   ├── SS4.png
+│   ├── SS5.png
+│   ├── MergeConflict_Local.png
+│   ├── MergeConflictResolved.png
+│   └── Encoding_Error.png
+│
+├── main.py                # Application entry point
+├── requirements.txt       # Project dependencies
+├── README.md              # Project documentation
+└── .gitignore             # Git ignored files
+
+
+## 8. Conclusion
 This project successfully transformed a simple CLI keylogger into a full-featured productivity suite. By implementing a custom **Fatigue Algorithm** and **Smart Alerts**, the tool provides actionable value to users. The modular architecture (`src/` vs `reports/`) ensures the code is maintainable and scalable for future AI integrations.
