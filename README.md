@@ -172,39 +172,34 @@ We followed a strict "Feature Branch Workflow" to ensure code quality. Here is e
 
 ---
 
-## 7. Directory Structure
 
+## 7. 📁 Directory Structure
+
+```text
 Keyboard-Productivity-Analyzer/
-│
 ├── src/
-│   ├── analyzer.py        # Fatigue scoring & productivity analysis logic
-│   ├── key_logger.py      # Keyboard event listener and data collection
-│   ├── gui.py             # Tkinter-based graphical user interface
-│   └── __init__.py
-│
+│   ├── analyzer.py          # Fatigue & productivity logic
+│   ├── key_logger.py        # Keyboard data collection
+│   ├── gui.py               # Tkinter GUI
+│   └── init.py
 ├── data/
-│   └── history.csv        # Stores previous session data for comparison
-│
+│   └── history.csv          # Session history storage
 ├── reports/
-│   ├── session_report_*.pdf   # Auto-generated PDF reports with graphs
-│
+│   └── session_report_*.pdf # Auto-generated reports
 ├── screenshots/
 │   ├── GUISS1.png
 │   ├── ReportScreenshot.png
 │   ├── Alert.png
-│   ├── SS1.png
-│   ├── SS2.png
-│   ├── SS3.png
-│   ├── SS4.png
-│   ├── SS5.png
+│   ├── SS1.png - SS5.png
 │   ├── MergeConflict_Local.png
 │   ├── MergeConflictResolved.png
 │   └── Encoding_Error.png
-│
-├── main.py                # Application entry point
-├── requirements.txt       # Project dependencies
-├── README.md              # Project documentation
-└── .gitignore             # Git ignored files
+├── main.py                  # Application entry point
+├── requirements.txt         # Project dependencies
+├── README.md                # Project documentation
+└── .gitignore               # Git ignored files 
+```
+
 
 
 ## 8. Conclusion
