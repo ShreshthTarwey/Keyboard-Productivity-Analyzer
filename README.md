@@ -99,6 +99,22 @@ We followed a strict "Feature Branch Workflow" to ensure code quality. Here is e
 
 ## 4. Installation & Usage
 
+1. **Create a Virtual Environment**:
+    ```bash
+    python -m venv venv
+    ```
+
+2. **Activate the Virtual Environment**:
+
+    2.1 Windows
+    ```bash
+    venv\Scripts\activate
+    ```
+    2.2 Linux/macOS
+    ```bash
+    source venv/bin/activate
+    ```
+
 1.  **Install Dependencies**:
     ```bash
     pip install -r requirements.txt
